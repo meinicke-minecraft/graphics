@@ -3,6 +3,7 @@ package dev.meinicke.mc.inventories;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -22,12 +24,12 @@ public class InventoryGraphic implements Graphic {
     // Object
 
     private final @NotNull Plugin plugin;
-    private final @NotNull ListenerImpl listener = new ListenerImpl();
+    private @NotNull Listener listener = new ListenerImpl();
 
     private @NotNull Inventory handle;
     private @Nullable String title;
 
-    private final @NotNull Map<Integer, Collection<Action<?>>> actions = new HashMap<>();
+    private final @NotNull Map<@NotNull Integer, @NotNull Collection<@NotNull Action<?>>> actions = new HashMap<>();
     private volatile boolean closed = false;
     private volatile boolean activeListener = false;
     private volatile boolean listening = true;
@@ -86,10 +88,10 @@ public class InventoryGraphic implements Graphic {
         this.title = title;
     }
 
-    public @NotNull Rows getRows() {
+    public final @NotNull Rows getRows() {
         return Rows.getBySlots(getHandle().getSize());
     }
-    public int getSize() {
+    public final int getSize() {
         return getRows().getSlots();
     }
 
@@ -128,11 +130,15 @@ public class InventoryGraphic implements Graphic {
 
     // Actions
 
-    public @NotNull Map<@Nullable Integer, @NotNull Collection<Action<?>>> getActions() {
+    public @NotNull Map<@Nullable Integer, @NotNull Collection<@NotNull Action<?>>> getActions() {
         return actions;
     }
-    public @NotNull Collection<Action<?>> getActions(@Nullable Integer slot) {
+    public @NotNull Collection<@NotNull Action<?>> getActions(@Nullable Integer slot) {
         return getActions().computeIfAbsent(slot, k -> new LinkedHashSet<>());
+    }
+
+    protected final void setListener(@NotNull Listener listener) {
+        this.listener = listener;
     }
 
     // Items
@@ -153,7 +159,10 @@ public class InventoryGraphic implements Graphic {
     public <T extends InventoryEvent> void setItem(@Nullable ItemStack item, @Nullable Action<T> action, int @NotNull ... slots) {
         for (int slot : slots) {
             getHandle().setItem(slot, item != null ? item : new ItemStack(Material.AIR));
-            getActions().computeIfAbsent(slot, k -> new LinkedHashSet<>()).add(action);
+
+            if (action != null) {
+                getActions().computeIfAbsent(slot, k -> new LinkedHashSet<>()).add(action);
+            }
         }
     }
     public void setItem(@NotNull ItemStack item, int @NotNull ... slots) {
@@ -170,7 +179,6 @@ public class InventoryGraphic implements Graphic {
     public void open(@NotNull Collection<HumanEntity> humans) {
         // Register events
         if (!humans.isEmpty() && !activeListener) {
-            Bukkit.broadcastMessage("Added listener");
             Bukkit.getPluginManager().registerEvents(listener, getPlugin());
             activeListener = true;
         }
@@ -346,7 +354,6 @@ public class InventoryGraphic implements Graphic {
             if (!listening || !e.getInventory().equals(getHandle())) {
                 return;
             } else if (!getHandle().getViewers().isEmpty() && activeListener) {
-                Bukkit.broadcastMessage("Removed listener");
                 HandlerList.unregisterAll(listener);
                 activeListener = false;
             }
@@ -356,12 +363,21 @@ public class InventoryGraphic implements Graphic {
 
         @SuppressWarnings("unchecked")
         private void call(@Nullable Integer slot, @NotNull InventoryEvent e) {
-            @NotNull Collection<Action<?>> actions = getActions(slot);
+            @NotNull Collection<Action<?>> actions = new LinkedList<>(getActions(slot));
 
             //noinspection rawtypes
-            for (@NotNull Action action : actions) {
-                if (action.getReference().isAssignableFrom(e.getClass())) {
-                    action.accept(e);
+            for (@UnknownNullability Action action : actions) {
+                if (action != null && action.getReference().isAssignableFrom(e.getClass())) {
+                    try {
+                        action.accept(e);
+                    } catch (@NotNull Throwable throwable) {
+                        if (e instanceof Cancellable) {
+                            ((Cancellable) e).setCancelled(true);
+                            throw new RuntimeException("cannot invoke action '" + action + "' for event: " + e + ". The event has automatically cancelled to avoid issues.", throwable);
+                        } else {
+                            throw new RuntimeException("cannot invoke action '" + action + "' for event: " + e, throwable);
+                        }
+                    }
                 }
             }
         }
