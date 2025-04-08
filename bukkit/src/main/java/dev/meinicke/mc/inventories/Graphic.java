@@ -2,7 +2,6 @@ package dev.meinicke.mc.inventories;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Closeable;
 import java.util.Collection;
 
-public interface Graphic extends Closeable, Listener {
+public interface Graphic extends Closeable {
 
     // Static initializers
 
