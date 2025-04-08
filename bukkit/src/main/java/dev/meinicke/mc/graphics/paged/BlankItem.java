@@ -1,8 +1,8 @@
-package dev.meinicke.mc.inventories.paged;
+package dev.meinicke.mc.graphics.paged;
 
-import dev.meinicke.mc.inventories.InventoryGraphic.AbstractAction;
-import dev.meinicke.mc.inventories.InventoryGraphic.Action;
-import dev.meinicke.mc.inventories.utils.ItemBuilder;
+import dev.meinicke.mc.graphics.InventoryGraphic.AbstractAction;
+import dev.meinicke.mc.graphics.InventoryGraphic.Action;
+import dev.meinicke.mc.graphics.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;

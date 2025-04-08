@@ -1,4 +1,4 @@
-package dev.meinicke.mc.inventories.utils;
+package dev.meinicke.mc.graphics.utils;
 
 // Copyright (c) 2017 deanveloper (see LICENSE.md for more info)
 

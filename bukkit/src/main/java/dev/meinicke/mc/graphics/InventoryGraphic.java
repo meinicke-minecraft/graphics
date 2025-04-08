@@ -1,4 +1,4 @@
-package dev.meinicke.mc.inventories;
+package dev.meinicke.mc.graphics;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

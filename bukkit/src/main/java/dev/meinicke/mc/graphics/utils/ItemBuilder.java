@@ -1,4 +1,4 @@
-package dev.meinicke.mc.inventories.utils;
+package dev.meinicke.mc.graphics.utils;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
