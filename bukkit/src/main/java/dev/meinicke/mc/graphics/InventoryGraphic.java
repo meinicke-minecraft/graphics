@@ -174,6 +174,23 @@ public class InventoryGraphic implements Graphic {
         setItem(item, null, slots);
     }
 
+    // Helpers
+
+    public void cancelOnClick() {
+        @NotNull Collection<@NotNull Action<? extends InventoryEvent>> actions = getActions(null);
+
+        if (actions.stream().noneMatch(a -> a instanceof CancelOnClickAction)) {
+            actions.add(new CancelOnClickAction());
+        }
+    }
+    public void cancelOnDrag() {
+        @NotNull Collection<@NotNull Action<? extends InventoryEvent>> actions = getActions(null);
+
+        if (actions.stream().noneMatch(a -> a instanceof CancelOnDragAction)) {
+            actions.add(new CancelOnDragAction());
+        }
+    }
+
     // Modules
 
     @Override
@@ -309,6 +326,39 @@ public class InventoryGraphic implements Graphic {
             private void click(@NotNull InventoryClickEvent e) {
 
             }
+        }
+
+    }
+
+    private static final class CancelOnClickAction extends AbstractAction<InventoryClickEvent> {
+
+        // Object
+
+        private CancelOnClickAction() {
+            super(InventoryClickEvent.class);
+        }
+
+        // Modules
+
+        @Override
+        public void accept(@NotNull InventoryClickEvent e) {
+            e.setCancelled(true);
+        }
+
+    }
+    private static final class CancelOnDragAction extends AbstractAction<InventoryDragEvent> {
+
+        // Object
+
+        private CancelOnDragAction() {
+            super(InventoryDragEvent.class);
+        }
+
+        // Modules
+
+        @Override
+        public void accept(@NotNull InventoryDragEvent e) {
+            e.setCancelled(true);
         }
 
     }
