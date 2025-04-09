@@ -61,7 +61,7 @@ public class PagedInventoryGraphic extends InventoryGraphic {
         return elements;
     }
     @Unmodifiable
-    public @NotNull Collection<@NotNull Element> getElements(int page) {
+    public final @NotNull Collection<@NotNull Element> getElements(int page) {
         int[] availableBounds = getAvailableBounds();
         return getElements().stream().skip(((long) getPage() * availableBounds.length)).limit(availableBounds.length).collect(Collectors.toList());
     }

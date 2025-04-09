@@ -11,12 +11,11 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 public class InventoryGraphic implements Graphic {
@@ -48,8 +47,6 @@ public class InventoryGraphic implements Graphic {
     public final @NotNull Plugin getPlugin() {
         return plugin;
     }
-
-    @ApiStatus.Internal
     protected @NotNull Inventory getHandle() {
         return handle;
     }
@@ -138,7 +135,15 @@ public class InventoryGraphic implements Graphic {
     }
 
     protected final void setListener(@NotNull Listener listener) {
+        // Unregister old one
+        HandlerList.unregisterAll(listener);
+
+        // Change it and register if possible
         this.listener = listener;
+
+        if (activeListener) {
+            Bukkit.getPluginManager().registerEvents(listener, getPlugin());
+        }
     }
 
     // Items
@@ -363,19 +368,25 @@ public class InventoryGraphic implements Graphic {
 
         @SuppressWarnings("unchecked")
         private void call(@Nullable Integer slot, @NotNull InventoryEvent e) {
-            @NotNull Collection<Action<?>> actions = new LinkedList<>(getActions(slot));
+            for (@NotNull Entry<@Nullable Integer, @NotNull Collection<@NotNull Action<?>>> entry : new LinkedList<>(getActions().entrySet())) {
+                @Nullable Integer actionSlot = entry.getKey();
 
-            //noinspection rawtypes
-            for (@UnknownNullability Action action : actions) {
-                if (action != null && action.getReference().isAssignableFrom(e.getClass())) {
-                    try {
-                        action.accept(e);
-                    } catch (@NotNull Throwable throwable) {
-                        if (e instanceof Cancellable) {
-                            ((Cancellable) e).setCancelled(true);
-                            throw new RuntimeException("cannot invoke action '" + action + "' for event: " + e + ". The event has automatically cancelled to avoid issues.", throwable);
-                        } else {
-                            throw new RuntimeException("cannot invoke action '" + action + "' for event: " + e, throwable);
+                if (actionSlot != null && !Objects.equals(actionSlot, slot)) {
+                    continue;
+                }
+
+                //noinspection rawtypes
+                for (@NotNull Action action : entry.getValue()) {
+                    if (action.getReference().isAssignableFrom(e.getClass())) {
+                        try {
+                            action.accept(e);
+                        } catch (@NotNull Throwable throwable) {
+                            if (e instanceof Cancellable) {
+                                ((Cancellable) e).setCancelled(true);
+                                throw new RuntimeException("cannot invoke action '" + entry + "' for event: " + e + ". The event has automatically cancelled to avoid issues.", throwable);
+                            } else {
+                                throw new RuntimeException("cannot invoke action '" + entry + "' for event: " + e, throwable);
+                            }
                         }
                     }
                 }

@@ -94,7 +94,7 @@ public final class ItemBuilder {
         return this;
     }
     @Contract("_->this")
-    public @NotNull ItemBuilder loreWithString(@Nullable Collection<String> lore) {
+    public @NotNull ItemBuilder lore(@Nullable Collection<String> lore) {
         this.lore = lore == null ? null : lore.stream().map(TextComponent::new).toArray(BaseComponent[]::new);
         return this;
     }
@@ -110,7 +110,7 @@ public final class ItemBuilder {
         return this;
     }
     @Contract("_->this")
-    public @NotNull ItemBuilder loreWithComponent(@NotNull Collection<BaseComponent[]> lore) {
+    public @NotNull ItemBuilder loreWithComponentCollection(@NotNull Collection<BaseComponent[]> lore) {
         @NotNull BaseComponent[] result = new BaseComponent[lore.stream().mapToInt(c -> c.length).sum() + (lore.size() - 1)];
 
         int row = 0;
