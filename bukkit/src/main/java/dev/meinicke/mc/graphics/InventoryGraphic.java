@@ -199,6 +199,11 @@ public class InventoryGraphic implements Graphic {
     }
     @Override
     public void open(@NotNull Collection<HumanEntity> humans) {
+        // Verify if it's not closed
+        if (closed) {
+            throw new IllegalStateException("this inventory graphic is already closed, you need to recreate it.");
+        }
+
         // Register events
         if (!humans.isEmpty() && !activeListener) {
             Bukkit.getPluginManager().registerEvents(listener, getPlugin());
@@ -329,38 +334,28 @@ public class InventoryGraphic implements Graphic {
         }
 
     }
-
-    private static final class CancelOnClickAction extends AbstractAction<InventoryClickEvent> {
-
-        // Object
-
-        private CancelOnClickAction() {
+    public static abstract class ClickAction extends AbstractAction<InventoryClickEvent> {
+        public ClickAction() {
             super(InventoryClickEvent.class);
         }
+    }
+    public static abstract class DragAction extends AbstractAction<InventoryDragEvent> {
+        public DragAction() {
+            super(InventoryDragEvent.class);
+        }
+    }
 
-        // Modules
-
+    private static final class CancelOnClickAction extends ClickAction {
         @Override
         public void accept(@NotNull InventoryClickEvent e) {
             e.setCancelled(true);
         }
-
     }
-    private static final class CancelOnDragAction extends AbstractAction<InventoryDragEvent> {
-
-        // Object
-
-        private CancelOnDragAction() {
-            super(InventoryDragEvent.class);
-        }
-
-        // Modules
-
+    private static final class CancelOnDragAction extends DragAction {
         @Override
         public void accept(@NotNull InventoryDragEvent e) {
             e.setCancelled(true);
         }
-
     }
 
     private final class ListenerImpl implements Listener {

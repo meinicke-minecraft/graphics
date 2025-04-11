@@ -99,15 +99,8 @@ public class PagedInventoryGraphic extends InventoryGraphic {
     public final int @NotNull [] getBounds() {
         return bounds;
     }
-    public final void setBounds(@NotNull Integer @NotNull [] slots) {
-        this.bounds = Arrays.stream(slots).mapToInt(i -> i).toArray();
-        sync();
 
-        if (slots.length > 0) {
-            setPage(Math.min(getPage(), getAvailablePages() - 1));
-        }
-    }
-    public final void setBounds(int @NotNull [] slots) {
+    public final void setBounds(int @NotNull ... slots) {
         this.bounds = slots;
         sync();
 
@@ -116,14 +109,14 @@ public class PagedInventoryGraphic extends InventoryGraphic {
         }
     }
     public final void setBounds(@Range(from = 1, to = 54) int bounds) {
-        this.setBounds(IntStream.range(0, bounds).boxed().toArray(Integer[]::new));
+        this.setBounds(IntStream.range(0, bounds).toArray());
     }
     public final void setBounds(@Range(from = 0, to = 53) int startInclusive, @Range(from = 0, to = 54) int endExclusive) {
         if (startInclusive > endExclusive) {
             throw new IllegalStateException("the start cannot be higher than to end");
         }
 
-        this.setBounds(IntStream.range(startInclusive, endExclusive).boxed().toArray(Integer[]::new));
+        this.setBounds(IntStream.range(startInclusive, endExclusive).toArray());
     }
 
     public int getIndex(int slot) {

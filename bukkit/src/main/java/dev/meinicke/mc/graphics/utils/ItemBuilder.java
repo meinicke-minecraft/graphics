@@ -88,29 +88,61 @@ public final class ItemBuilder {
         return this;
     }
 
-    @Contract("_->this")
-    public @NotNull ItemBuilder lore(@NotNull String @Nullable ... lore) {
-        this.lore = lore == null ? null : Arrays.stream(lore).map(TextComponent::new).toArray(BaseComponent[]::new);
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(boolean append, @NotNull String lore) {
+        @NotNull BaseComponent[] result = new BaseComponent[] { new TextComponent(lore) };
+
+        if (append) appendLore(result);
+        else this.lore = result;
+
         return this;
     }
-    @Contract("_->this")
-    public @NotNull ItemBuilder lore(@Nullable Collection<String> lore) {
-        this.lore = lore == null ? null : lore.stream().map(TextComponent::new).toArray(BaseComponent[]::new);
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(boolean append, @NotNull String @Nullable ... lore) {
+        @NotNull BaseComponent[] result = lore == null ? null : Arrays.stream(lore).map(TextComponent::new).toArray(BaseComponent[]::new);
+
+        if (append) appendLore(result);
+        else this.lore = result;
+
+        return this;
+    }
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(@Nullable Collection<String> lore, boolean append) {
+        @NotNull BaseComponent[] result = lore == null ? null : lore.stream().map(TextComponent::new).toArray(BaseComponent[]::new);
+
+        if (append) appendLore(result);
+        else this.lore = result;
+
         return this;
     }
 
-    @Contract("_->this")
-    public @NotNull ItemBuilder lore(@Nullable BaseComponent lore) {
-        this.lore = lore == null ? null : new BaseComponent[] { lore };
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(@Nullable BaseComponent lore, boolean append) {
+        @NotNull BaseComponent[] result = lore == null ? null : new BaseComponent[] { lore };
+
+        if (append) appendLore(result);
+        else this.lore = result;
+
         return this;
     }
-    @Contract("_->this")
-    public @NotNull ItemBuilder lore(@NotNull BaseComponent @NotNull ... lore) {
-        this.lore = lore;
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(boolean append, @NotNull BaseComponent lore) {
+        @NotNull BaseComponent[] result = new BaseComponent[] { lore };
+
+        if (append) appendLore(result);
+        else this.lore = result;
+
         return this;
     }
-    @Contract("_->this")
-    public @NotNull ItemBuilder loreWithComponentCollection(@NotNull Collection<BaseComponent[]> lore) {
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder lore(boolean append, @NotNull BaseComponent @NotNull ... lore) {
+        if (append) appendLore(lore);
+        else this.lore = lore;
+
+        return this;
+    }
+    @Contract("_,_->this")
+    public @NotNull ItemBuilder loreWithComponentCollection(@NotNull Collection<BaseComponent[]> lore, boolean append) {
         @NotNull BaseComponent[] result = new BaseComponent[lore.stream().mapToInt(c -> c.length).sum() + (lore.size() - 1)];
 
         int row = 0;
@@ -125,8 +157,41 @@ public final class ItemBuilder {
             components[row++] = new TextComponent("\n");
         }
 
-        this.lore = result;
+        if (append) appendLore(result);
+        else this.lore = result;
+
         return this;
+    }
+    private void appendLore(@NotNull BaseComponent[] components) {
+        if (this.lore == null) {
+            this.lore = components;
+        } else {
+            int oldLength = this.lore.length;
+            this.lore = Arrays.copyOf(this.lore, oldLength + components.length);
+            System.arraycopy(components, 0, this.lore, oldLength, components.length);
+        }
+    }
+
+    @Contract("_->this")
+    public @NotNull ItemBuilder lore(@NotNull String @Nullable ... lore) {
+        return lore(false, lore);
+    }
+    @Contract("_->this")
+    public @NotNull ItemBuilder lore(@Nullable Collection<String> lore) {
+        return lore(lore, false);
+    }
+
+    @Contract("_->this")
+    public @NotNull ItemBuilder lore(@Nullable BaseComponent lore) {
+        return lore(lore, false);
+    }
+    @Contract("_->this")
+    public @NotNull ItemBuilder lore(@NotNull BaseComponent @NotNull ... lore) {
+        return lore(false, lore);
+    }
+    @Contract("_->this")
+    public @NotNull ItemBuilder loreWithComponentCollection(@NotNull Collection<BaseComponent[]> lore) {
+        return loreWithComponentCollection(lore, false);
     }
 
     @Contract("_,_->this")
