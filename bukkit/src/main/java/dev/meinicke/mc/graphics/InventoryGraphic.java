@@ -302,7 +302,7 @@ public class InventoryGraphic implements Graphic {
         @NotNull Class<T> getReference();
 
         @Override
-        void accept(@NotNull T t);
+        void accept(@NotNull T e);
     }
     public static abstract class AbstractAction<T extends InventoryEvent> implements Action<T> {
 
@@ -421,7 +421,7 @@ public class InventoryGraphic implements Graphic {
                 }
 
                 //noinspection rawtypes
-                for (@NotNull Action action : entry.getValue()) {
+                for (@NotNull Action action : new LinkedList<>(entry.getValue())) {
                     if (action.getReference().isAssignableFrom(e.getClass())) {
                         try {
                             action.accept(e);
